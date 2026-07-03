@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CRED One Card Prototype</title>
+  <style>
+    :root {
+      --bg: #070809;
+      --phone: #111417;
+      --panel: #1a1d20;
+      --panel-2: #22262a;
+      --stroke: rgba(255,255,255,.09);
+      --text: #f2f0eb;
+      --muted: #9b9b95;
+      --soft: #d4d0c5;
+      --gold: #d7b46a;
+      --green: #69e7aa;
+      --blue: #8da4ff;
+      --warn: #ffce6b;
+      --shadow: 0 28px 80px rgba(0,0,0,.52);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -20%, rgba(215,180,106,.14), transparent 32%),
+        linear-gradient(135deg, #050505 0%, #111417 52%, #050505 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      letter-spacing: 0;
+    }
+
+    .stage {
+      width: min(100%, 420px);
+      display: grid;
+      gap: 14px;
+    }
+
+    .deck-hint {
+      text-align: center;
+      color: rgba(242,240,235,.58);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .phone {
+      width: min(100%, 390px);
+      height: min(830px, calc(100vh - 72px));
+      min-height: 680px;
+      margin: 0 auto;
+      border-radius: 38px;
+      padding: 12px;
+      background: linear-gradient(145deg, #2a2d30, #060708 48%, #272a2d);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.14);
+      position: relative;
+    }
+
+    .screen {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      border-radius: 29px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.035), transparent 22%),
+        var(--phone);
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .status {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 21px;
+      color: rgba(242,240,235,.9);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .signals {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .signal {
+      width: 14px;
+      height: 8px;
+      border: 1px solid rgba(242,240,235,.8);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .signal::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: 2px;
+      width: 2px;
+      height: 3px;
+      background: rgba(242,240,235,.8);
+      border-radius: 0 1px 1px 0;
+    }
+
+    .bars {
+      display: flex;
+      gap: 2px;
+      align-items: end;
+      height: 10px;
+    }
+
+    .bars span {
+      width: 3px;
+      background: rgba(242,240,235,.84);
+      border-radius: 2px;
+    }
+
+    .bars span:nth-child(1) { height: 4px; }
+    .bars span:nth-child(2) { height: 6px; }
+    .bars span:nth-child(3) { height: 8px; }
+    .bars span:nth-child(4) { height: 10px; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 22px 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      font-size: 17px;
+    }
+
+    .mark {
+      width: 23px;
+      height: 25px;
+      border: 1.5px solid rgba(242,240,235,.78);
+      clip-path: polygon(50% 0, 94% 18%, 84% 78%, 50% 100%, 16% 78%, 6% 18%);
+      position: relative;
+    }
+
+    .mark::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-top: 1.4px solid rgba(242,240,235,.68);
+      border-bottom: 1.4px solid rgba(242,240,235,.68);
+    }
+
+    .icon-btn {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(145deg, #24282b, #111315);
+      color: var(--soft);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 22px rgba(0,0,0,.26);
+    }
+
+    .content {
+      height: calc(100% - 38px - 53px - 76px);
+      overflow: auto;
+      padding: 4px 20px 18px;
+      scrollbar-width: none;
+    }
+
+    .content::-webkit-scrollbar { display: none; }
+
+    .view { display: none; animation: fade .24s ease both; }
+    .view.active { display: block; }
+
+    @keyframes fade {
+      from { opacity: .3; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      text-transform: lowercase;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.02;
+      margin-top: 8px;
+      max-width: 290px;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 10px;
+      max-width: 300px;
+    }
+
+    .card-hero {
+      margin-top: 25px;
+      height: 216px;
+      border: 0;
+      width: 100%;
+      background: none;
+      perspective: 900px;
+      cursor: pointer;
+      padding: 0;
+      color: inherit;
+      text-align: left;
+    }
+
+    .one-card {
+      height: 198px;
+      border-radius: 18px;
+      padding: 22px;
+      background:
+        linear-gradient(125deg, rgba(255,255,255,.11), transparent 25%),
+        radial-gradient(circle at 84% 18%, rgba(215,180,106,.24), transparent 24%),
+        linear-gradient(145deg, #0b0c0d, #25282a 58%, #0a0b0c);
+      border: 1px solid rgba(255,255,255,.13);
+      box-shadow: 0 26px 42px rgba(0,0,0,.42);
+      transform: rotateX(9deg) rotateZ(-2deg);
+      position: relative;
+      overflow: hidden;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .card-hero:hover .one-card,
+    .card-hero:focus-visible .one-card {
+      transform: rotateX(5deg) rotateZ(-1deg) translateY(-5px);
+      box-shadow: 0 32px 52px rgba(0,0,0,.5);
+    }
+
+    .chip {
+      width: 42px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #c9a75b, #f4df9c 50%, #9a7430);
+      margin-top: 25px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.22);
+    }
+
+    .card-word {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      color: rgba(242,240,235,.9);
+    }
+
+    .card-word strong {
+      display: block;
+      font-size: 18px;
+      letter-spacing: .06em;
+    }
+
+    .card-word span {
+      display: block;
+      margin-top: 4px;
+      color: rgba(242,240,235,.52);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .tap-rings {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(215,180,106,.66);
+      position: relative;
+    }
+
+    .tap-rings::before,
+    .tap-rings::after {
+      content: "";
+      position: absolute;
+      border-radius: inherit;
+      border: 1px solid rgba(215,180,106,.34);
+      inset: 7px;
+    }
+
+    .tap-rings::after { inset: 14px; }
+
+    .card-bottom {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      font-size: 12px;
+      color: rgba(242,240,235,.72);
+    }
+
+    .metric-row {
+      margin-top: 6px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .metric {
+      min-height: 78px;
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      padding: 12px 10px;
+    }
+
+    .metric b {
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 10.5px;
+      line-height: 1.25;
+      display: block;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 25px 0 11px;
+    }
+
+    .section-title h2 {
+      font-size: 17px;
+      line-height: 1.1;
+    }
+
+    .pill {
+      min-height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      background: rgba(105,231,170,.1);
+      color: var(--green);
+      border: 1px solid rgba(105,231,170,.18);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .panel {
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .track-panel { padding: 14px; }
+
+    .live-track {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .pulse {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(215,180,106,.12);
+      border: 1px solid rgba(215,180,106,.32);
+      position: relative;
+    }
+
+    .pulse::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: inherit;
+      background: var(--gold);
+      animation: blink 1.25s ease infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: .34; transform: scale(.78); }
+    }
+
+    .track-copy strong {
+      font-size: 14px;
+      display: block;
+    }
+
+    .track-copy span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .steps {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: rgba(242,240,235,.58);
+      font-size: 12px;
+      transition: color .2s ease;
+    }
+
+    .step i {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.07);
+      color: rgba(242,240,235,.52);
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .step.done {
+      color: var(--soft);
+    }
+
+    .step.done i {
+      background: rgba(105,231,170,.16);
+      color: var(--green);
+    }
+
+    .transaction-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .txn {
+      width: 100%;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
+      border-radius: 8px;
+      color: inherit;
+      padding: 13px;
+      display: grid;
+      grid-template-columns: 39px 1fr auto;
+      gap: 11px;
+      align-items: center;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .txn:active { transform: scale(.99); }
+
+    .txn-icon {
+      width: 39px;
+      height: 39px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+    }
+
+    .txn-title {
+      display: block;
+      font-size: 13px;
+      font-weight: 760;
+      margin-bottom: 3px;
+    }
+
+    .txn-meta {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .txn-amount {
+      text-align: right;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .txn-amount span {
+      color: var(--green);
+      display: block;
+      font-size: 10.5px;
+      margin-top: 4px;
+    }
+
+    .detail-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .back {
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      color: var(--soft);
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .detail-head h2 {
+      font-size: 19px;
+    }
+
+    .route-card {
+      padding: 17px;
+    }
+
+    .route-main {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .route-main h3 {
+      font-size: 23px;
+      margin-top: 7px;
+    }
+
+    .route-main p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: 6px;
+    }
+
+    .reward-chip {
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: rgba(105,231,170,.11);
+      color: var(--green);
+      border: 1px solid rgba(105,231,170,.18);
+      font-weight: 850;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .routing-lines {
+      display: grid;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .routing-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .routing-line strong {
+      color: var(--soft);
+      font-size: 13px;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .compare-box {
+      border-radius: 8px;
+      padding: 13px 11px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.075);
+      min-height: 86px;
+    }
+
+    .compare-box span {
+      color: var(--muted);
+      font-size: 10.5px;
+      display: block;
+      line-height: 1.25;
+    }
+
+    .compare-box b {
+      display: block;
+      margin-top: 9px;
+      color: var(--soft);
+      font-size: 19px;
+    }
+
+    .compare-box.good b { color: var(--green); }
+    .compare-box.miss b { color: var(--warn); }
+
+    .mini-card-stack {
+      margin-top: 19px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .linked-card {
+      min-height: 76px;
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+      padding: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .linked-card.selected {
+      border-color: rgba(105,231,170,.28);
+      background: linear-gradient(135deg, rgba(105,231,170,.1), rgba(255,255,255,.03));
+    }
+
+    .linked-card strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .linked-card span {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .tab-screen h1 {
+      font-size: 26px;
+      margin-bottom: 14px;
+    }
+
+    .bill-total {
+      padding: 19px;
+      margin-top: 12px;
+    }
+
+    .bill-total .amount {
+      font-size: 34px;
+      font-weight: 850;
+      margin-top: 9px;
+    }
+
+    .bill-total p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 7px;
+      line-height: 1.4;
+    }
+
+    .split-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      padding: 13px 0;
+      color: var(--soft);
+      font-size: 13px;
+    }
+
+    .split-row:first-child { border-top: 0; }
+    .split-row span { color: var(--muted); }
+
+    .bottom-nav {
+      height: 76px;
+      border-top: 1px solid rgba(255,255,255,.07);
+      background: rgba(17,20,23,.92);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 13px calc(8px + env(safe-area-inset-bottom));
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-item {
+      border: 0;
+      background: transparent;
+      color: rgba(242,240,235,.44);
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .nav-item.active { color: var(--gold); }
+
+    .toast {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 88px;
+      border-radius: 8px;
+      background: rgba(6,7,8,.94);
+      border: 1px solid rgba(105,231,170,.22);
+      padding: 12px 13px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: var(--soft);
+      font-size: 12px;
+      box-shadow: 0 16px 38px rgba(0,0,0,.42);
+      z-index: 20;
+    }
+
+    .toast.show {
+      display: flex;
+      animation: toast .36s ease both;
+    }
+
+    @keyframes toast {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 430px) {
+      body {
+        padding: 0;
+        background: var(--bg);
+      }
+
+      .stage, .phone {
+        width: 100%;
+      }
+
+      .deck-hint { display: none; }
+
+      .phone {
+        height: 100vh;
+        min-height: 640px;
+        border-radius: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .screen {
+        border-radius: 0;
+        border: 0;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .content { padding-left: 15px; padding-right: 15px; }
+      h1 { font-size: 27px; }
+      .metric b { font-size: 16px; }
+      .card-hero { height: 200px; }
+      .one-card { height: 184px; padding: 18px; }
+      .compare { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="phone" aria-label="CRED One Card clickable phone prototype">
+      <div class="screen">
+        <div class="status">
+          <span>9:41</span>
+          <div class="signals" aria-hidden="true">
+            <div class="bars"><span></span><span></span><span></span><span></span></div>
+            <span>5G</span>
+            <div class="signal"></div>
+          </div>
+        </div>
+
+        <header>
+          <div class="brand"><span class="mark" aria-hidden="true"></span><span>CRED</span></div>
+          <button class="icon-btn" type="button" aria-label="Settings">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06a2.1 2.1 0 0 1-2.97 2.97l-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.09 1.65v.17a2.1 2.1 0 0 1-4.2 0v-.09A1.8 1.8 0 0 0 8.4 19.6a1.8 1.8 0 0 0-1.98.36l-.06.06a2.1 2.1 0 0 1-2.97-2.97l.06-.06A1.8 1.8 0 0 0 3.8 15a1.8 1.8 0 0 0-1.65-1.09h-.17a2.1 2.1 0 0 1 0-4.2h.09A1.8 1.8 0 0 0 3.8 8.6a1.8 1.8 0 0 0-.36-1.98l-.06-.06a2.1 2.1 0 0 1 2.97-2.97l.06.06a1.8 1.8 0 0 0 1.98.36h.01a1.8 1.8 0 0 0 1.09-1.65v-.17a2.1 2.1 0 0 1 4.2 0v.09A1.8 1.8 0 0 0 15 4.4a1.8 1.8 0 0 0 1.98-.36l.06-.06a2.1 2.1 0 0 1 2.97 2.97l-.06.06A1.8 1.8 0 0 0 19.6 8.6v.01a1.8 1.8 0 0 0 1.65 1.09h.17a2.1 2.1 0 0 1 0 4.2h-.09A1.8 1.8 0 0 0 19.4 15Z"/></svg>
+          </button>
+        </header>
+
+        <div class="content">
+          <section class="view active" id="homeView">
+            <div class="eyebrow">one card</div>
+            <h1>one card. best reward. every time.</h1>
+            <p class="sub">Tap the physical card to see how CRED tracks swipes and routes each payment to the highest-reward linked card.</p>
+
+            <button class="card-hero" id="heroCard" type="button" aria-label="Open CRED One Card tracking">
+              <div class="one-card">
+                <div class="card-word">
+                  <div><strong>CRED ONE</strong><span>universal reward card</span></div>
+                  <div class="tap-rings" aria-hidden="true"></div>
+                </div>
+                <div class="chip" aria-hidden="true"></div>
+                <div class="card-bottom">
+                  <span>5321&nbsp;&nbsp;••••&nbsp;&nbsp;••••&nbsp;&nbsp;9088</span>
+                  <strong>ACTIVE</strong>
+                </div>
+              </div>
+            </button>
+
+            <div class="metric-row" aria-label="One card metrics">
+              <div class="metric"><b>12</b><span>swipes this month</span></div>
+              <div class="metric"><b>₹842</b><span>extra rewards unlocked</span></div>
+              <div class="metric"><b>5</b><span>categories optimized</span></div>
+            </div>
+
+            <div class="section-title">
+              <h2>live routing</h2>
+              <span class="pill">tap detected</span>
+            </div>
+            <div class="panel track-panel">
+              <div class="live-track">
+                <div class="pulse" aria-hidden="true"></div>
+                <div class="track-copy">
+                  <strong>Metro payment at Rajiv Chowk</strong>
+                  <span>CRED is checking linked cards for transit rewards.</span>
+                </div>
+              </div>
+              <div class="steps">
+                <div class="step done"><i>1</i><span>tap detected</span></div>
+                <div class="step" id="stepBest"><i>2</i><span>best reward found</span></div>
+                <div class="step" id="stepApplied"><i>3</i><span>reward applied</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="cardsView">
+            <div class="eyebrow">tracking</div>
+            <h1>all swipes, routed by CRED</h1>
+            <p class="sub">CRED routed this payment to your highest-reward card. no card switching. no missed rewards.</p>
+
+            <div class="section-title">
+              <h2>today</h2>
+              <span class="pill">₹186 earned</span>
+            </div>
+            <div class="transaction-list" id="transactionList"></div>
+          </section>
+
+          <section class="view" id="detailView">
+            <div class="detail-head">
+              <button class="back" type="button" id="backToCards" aria-label="Back to transactions">‹</button>
+              <div>
+                <div class="eyebrow">reward route</div>
+                <h2 id="detailTitle">metro tap</h2>
+              </div>
+            </div>
+
+            <div class="panel route-card">
+              <div class="route-main">
+                <div>
+                  <div class="eyebrow" id="detailPlace">Delhi Metro</div>
+                  <h3 id="detailAmount">₹80</h3>
+                  <p id="detailCopy">CRED selected the linked card with the highest reward for transit.</p>
+                </div>
+                <div class="reward-chip" id="detailReward">+5%</div>
+              </div>
+
+              <div class="routing-lines">
+                <div class="routing-line"><span>best card selected</span><strong id="detailCard">HDFC Millennia</strong></div>
+                <div class="routing-line"><span>category detected</span><strong id="detailCategory">metro & transit</strong></div>
+                <div class="routing-line"><span>bill destination</span><strong>CRED One Bill</strong></div>
+              </div>
+
+              <div class="compare">
+                <div class="compare-box good"><span>reward earned through One Card</span><b id="detailEarned">₹4</b></div>
+                <div class="compare-box miss"><span>likely missed with wrong card</span><b id="detailMissed">₹3</b></div>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <h2>linked cards checked</h2>
+              <span class="pill">auto routed</span>
+            </div>
+            <div class="mini-card-stack" id="linkedCards"></div>
+          </section>
+
+          <section class="view tab-screen" id="rewardsView">
+            <div class="eyebrow">rewards</div>
+            <h1>reward lift this month</h1>
+            <div class="panel bill-total">
+              <span class="pill">optimized by category</span>
+              <div class="amount">₹842</div>
+              <p>earned above previous behavior by letting CRED choose the best linked card for each transaction.</p>
+            </div>
+
+            <div class="section-title">
+              <h2>category lift</h2>
+            </div>
+            <div class="panel">
+              <div class="split-row"><strong>metro & transit</strong><span>+₹116</span></div>
+              <div class="split-row"><strong>dining</strong><span>+₹244</span></div>
+              <div class="split-row"><strong>fuel</strong><span>+₹191</span></div>
+              <div class="split-row"><strong>groceries</strong><span>+₹173</span></div>
+              <div class="split-row"><strong>retail</strong><span>+₹118</span></div>
+            </div>
+          </section>
+
+          <section class="view tab-screen" id="billsView">
+            <div class="eyebrow">one bill</div>
+            <h1>one consolidated bill</h1>
+            <div class="panel bill-total">
+              <span class="pill">due on 09 Aug</span>
+              <div class="amount">₹32,480</div>
+              <p>All routed transactions settle into one CRED bill while individual linked cards stay optimized in the background.</p>
+            </div>
+
+            <div class="section-title">
+              <h2>bill split</h2>
+            </div>
+            <div class="panel">
+              <div class="split-row"><strong>HDFC Millennia</strong><span>₹9,820</span></div>
+              <div class="split-row"><strong>Axis Ace</strong><span>₹12,450</span></div>
+              <div class="split-row"><strong>SBI Cashback</strong><span>₹6,710</span></div>
+              <div class="split-row"><strong>ICICI Coral</strong><span>₹3,500</span></div>
+            </div>
+          </section>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Prototype navigation">
+          <button class="nav-item active" type="button" data-view="homeView" aria-label="Home">
+            <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z"/></svg>
+            <span>home</span>
+          </button>
+          <button class="nav-item" type="button" data-view="cardsView" aria-label="Cards">
+            <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>
+            <span>cards</span>
+          </button>
+          <button class="nav-item" type="button" data-view="rewardsView" aria-label="Rewards">
+            <svg viewBox="0 0 24 24"><path d="M20 12v8H4v-8"/><path d="M2 7h20v5H2z"/><path d="M12 7v13"/><path d="M12 7H8.5a2.5 2.5 0 1 1 2.22-3.65C11.3 4.48 12 7 12 7Z"/><path d="M12 7h3.5a2.5 2.5 0 1 0-2.22-3.65C12.7 4.48 12 7 12 7Z"/></svg>
+            <span>rewards</span>
+          </button>
+          <button class="nav-item" type="button" data-view="billsView" aria-label="Bills">
+            <svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v16l-3-2-2 2-2-2-2 2-2-2-3 2V5a2 2 0 0 1 2-2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            <span>bills</span>
+          </button>
+        </nav>
+
+        <div class="toast" id="toast" role="status" aria-live="polite">
+          <span class="pill">reward applied</span>
+          <span>Metro routed via HDFC Millennia. +₹4 earned.</span>
+        </div>
+      </div>
+    </section>
+    <p class="deck-hint">Open this file on mobile or desktop. Tap the card, transactions, and bottom navigation to demo the feature.</p>
+  </main>
+
+  <script>
+    const txns = [
+      {
+        icon: "M",
+        title: "Delhi Metro",
+        meta: "Rajiv Chowk • 9:12 AM",
+        amount: "₹80",
+        reward: "₹4 earned",
+        card: "HDFC Millennia",
+        category: "metro & transit",
+        rate: "+5%",
+        missed: "₹3",
+        place: "Delhi Metro",
+        copy: "CRED selected the linked card with the highest reward for transit."
+      },
+      {
+        icon: "D",
+        title: "Social, Cyber Hub",
+        meta: "Dining • yesterday",
+        amount: "₹2,430",
+        reward: "₹121 earned",
+        card: "Axis Ace",
+        category: "restaurants",
+        rate: "+5%",
+        missed: "₹73",
+        place: "Social, Cyber Hub",
+        copy: "Dining was routed to the card with the strongest restaurant multiplier."
+      },
+      {
+        icon: "F",
+        title: "IndianOil",
+        meta: "Fuel • Tue",
+        amount: "₹3,200",
+        reward: "₹64 earned",
+        card: "ICICI Coral",
+        category: "fuel",
+        rate: "+2%",
+        missed: "₹48",
+        place: "IndianOil",
+        copy: "Fuel surcharge and reward rules were checked before routing."
+      },
+      {
+        icon: "G",
+        title: "Nature's Basket",
+        meta: "Groceries • Mon",
+        amount: "₹1,850",
+        reward: "₹92 earned",
+        card: "SBI Cashback",
+        category: "groceries",
+        rate: "+5%",
+        missed: "₹56",
+        place: "Nature's Basket",
+        copy: "Grocery spend was routed to the linked card with the best cashback."
+      },
+      {
+        icon: "R",
+        title: "Zara",
+        meta: "Retail • Sun",
+        amount: "₹4,990",
+        reward: "₹150 earned",
+        card: "Axis Ace",
+        category: "retail",
+        rate: "+3%",
+        missed: "₹100",
+        place: "Zara",
+        copy: "Retail purchase was optimized for the highest eligible reward."
+      }
+    ];
+
+    const linked = [
+      ["HDFC Millennia", "best for metro & online", "+5%"],
+      ["Axis Ace", "best for dining & retail", "+5%"],
+      ["SBI Cashback", "best for groceries", "+5%"],
+      ["ICICI Coral", "best for fuel", "+2%"]
+    ];
+
+    const views = [...document.querySelectorAll(".view")];
+    const navItems = [...document.querySelectorAll(".nav-item")];
+    const toast = document.querySelector("#toast");
+
+    function showView(id, navId = id) {
+      views.forEach(view => view.classList.toggle("active", view.id === id));
+      navItems.forEach(item => item.classList.toggle("active", item.dataset.view === navId));
+      document.querySelector(".content").scrollTop = 0;
+    }
+
+    function showToast() {
+      toast.classList.add("show");
+      window.clearTimeout(window.toastTimer);
+      window.toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2700);
+    }
+
+    function runRoutingAnimation() {
+      const best = document.querySelector("#stepBest");
+      const applied = document.querySelector("#stepApplied");
+      best.classList.remove("done");
+      applied.classList.remove("done");
+      setTimeout(() => best.classList.add("done"), 700);
+      setTimeout(() => {
+        applied.classList.add("done");
+        showToast();
+      }, 1400);
+    }
+
+    function renderTransactions() {
+      const list = document.querySelector("#transactionList");
+      list.innerHTML = txns.map((txn, index) => `
+        <button class="txn" type="button" data-index="${index}" aria-label="Open ${txn.title} routing detail">
+          <span class="txn-icon" aria-hidden="true">${txn.icon}</span>
+          <span>
+            <span class="txn-title">${txn.title}</span>
+            <span class="txn-meta">${txn.meta}</span>
+          </span>
+          <span class="txn-amount">${txn.amount}<span>${txn.reward}</span></span>
+        </button>
+      `).join("");
+
+      list.querySelectorAll(".txn").forEach(button => {
+        button.addEventListener("click", () => openDetail(txns[Number(button.dataset.index)]));
+      });
+    }
+
+    function openDetail(txn) {
+      document.querySelector("#detailTitle").textContent = txn.title.toLowerCase();
+      document.querySelector("#detailPlace").textContent = txn.place;
+      document.querySelector("#detailAmount").textContent = txn.amount;
+      document.querySelector("#detailCopy").textContent = txn.copy;
+      document.querySelector("#detailReward").textContent = txn.rate;
+      document.querySelector("#detailCard").textContent = txn.card;
+      document.querySelector("#detailCategory").textContent = txn.category;
+      document.querySelector("#detailEarned").textContent = txn.reward.split(" ")[0];
+      document.querySelector("#detailMissed").textContent = txn.missed;
+
+      document.querySelector("#linkedCards").innerHTML = linked.map(card => `
+        <div class="linked-card ${card[0] === txn.card ? "selected" : ""}">
+          <div><strong>${card[0]}</strong><span>${card[1]}</span></div>
+          <span class="pill">${card[2]}</span>
+        </div>
+      `).join("");
+
+      showView("detailView", "cardsView");
+    }
+
+    document.querySelector("#heroCard").addEventListener("click", () => {
+      showView("cardsView");
+      runRoutingAnimation();
+    });
+
+    document.querySelector("#backToCards").addEventListener("click", () => showView("cardsView"));
+
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        showView(item.dataset.view);
+        if (item.dataset.view === "homeView") runRoutingAnimation();
+      });
+    });
+
+    renderTransactions();
+    runRoutingAnimation();
+  </script>
+</body>
+</html>
